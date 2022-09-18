@@ -1,0 +1,20 @@
+[Unit]
+Description=Geekworm X728 UPS Management Daemon
+After=network.target mosquitto.service network-online.target
+Wants=network-online.target
+Requires=network.target
+
+[Service]
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=$PYTHONPATH:/home/pi/.local/lib/python3.9/site-packages
+Type=notify
+User=pi
+WorkingDirectory=/home/pi/x728-daemon
+ExecStart=/usr/bin/python -u /home/pi/x728-daemon/main.py -c /home/pi/x728-daemon/config.ini
+StandardOutput=null
+StandardError=journal
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
