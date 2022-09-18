@@ -1,15 +1,10 @@
 
 from argparse import ArgumentParser
 import os
-import threading
-import traceback
-import types
 from config import Configuration
 import asyncio
-import signal
 import typing
 import logging
-import sys
 
 import aiorun
 
