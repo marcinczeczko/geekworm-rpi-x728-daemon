@@ -69,8 +69,8 @@ class X728PowerManager:
     async def press_reboot(self):
         await self._press_button(0.5)
 
-    def ac_power(self) -> str:
-        return "LOST" if GPIO.input(GPIO_POWERLOSS_PIN) else "ON"
+    def ac_power(self) -> bool:
+        return not bool(GPIO.input(GPIO_POWERLOSS_PIN))
 
     async def _pwr_button_pressed(self):
         if GPIO.input(GPIO_PHYSICAL_BUTTON_PIN):

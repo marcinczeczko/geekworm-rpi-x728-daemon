@@ -129,13 +129,14 @@ class X728Daemon:
             battery_low = bool(voltage < 3.5)
             battery_very_low = bool(voltage < 3.0)
 
-            if battery_very_low:
-                _LOGGER.warning("Battery way to low !. System will gracefully shutdown")
-                await asyncio.sleep(2)
-                await self._power.press_shutdown()
+            if not ac_power:
+                if battery_very_low:
+                    _LOGGER.warning("Battery way to low !. System will gracefully shutdown")
+                    await asyncio.sleep(2)
+                    await self._power.press_shutdown()
 
-            if battery_low:
-                _LOGGER.warning("Battery low !. System will shutdown soon")
+                if battery_low:
+                    _LOGGER.warning("Battery low !. System will shutdown soon")
 
             telemetry_msg = json.dumps({
                 "Time": timestamp,
