@@ -33,7 +33,7 @@ if __name__ == "__main__":
     except (configparser.Error, FileNotFoundError) as e:
         _LOGGER.error("%s exception occured %s", type(e), e)
         parser.error(f"Please check {config_file_path} has wrong syntax")
-    _LOGGER.setLevel(config.log_level)
+    logging.getLogger("").setLevel(config.log_level)
 
     loop = asyncio.get_event_loop()
 
