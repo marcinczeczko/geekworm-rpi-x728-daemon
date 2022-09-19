@@ -21,8 +21,6 @@ class Configuration:
         with open(config_file_path, encoding="utf-8") as file:
             config.read_file(file)
 
-        self.log_level = self._get_str(config, "General", "logLevel", "INFO")
-
         self.mqtt_host = self._get_str(config, "MQTT", "mqtt_host", "localhost")
         self.mqtt_port = self._get_int(config, "MQTT", "mqtt_port", 1883)
 
