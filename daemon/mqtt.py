@@ -40,7 +40,7 @@ class X728Daemon:
         self._mqtt: AsyncMqttClient = None
         self._battery: X728Battery = None
         self._power: X728PowerManager = None
-        self._will = Will(self._config.lwt_topic, LWT_OFFLINE_MSG, qos=0, retain=True)
+        self._will = Will(self._config.lwt_topic, LWT_OFFLINE_MSG, qos=1, retain=True)
         self._tasks = set()
         self._sdnotifier = sdnotify.SystemdNotifier()
 
@@ -90,7 +90,7 @@ class X728Daemon:
         await self._mqtt.publish(self._config.ac_power_topic, msg, qos=0, retain=False)
 
     async def _send_announcement(self, msg: str):
-        await self._mqtt.publish(self._config.lwt_topic, msg, qos=0, retain=True)
+        await self._mqtt.publish(self._config.lwt_topic, msg, qos=1, retain=True)
 
     async def _process_messages(self, messages):
         async for message in messages:
