@@ -64,6 +64,9 @@ class X728Daemon:
             # Send Online LWT message
             self._tasks.add(asyncio.create_task(self._send_announcement(LWT_ONLINE_MSG)))
 
+            # Start telemetry tasks
+            self._tasks.add(asyncio.create_task(self._read_telemetry_data()))
+
             # Get messages generator for a given topic
             messages = await stack.enter_async_context(self._mqtt.filtered_messages(self._config.pwr_command_topic))
             # Handle received messages
@@ -74,9 +77,6 @@ class X728Daemon:
             # callbacks. Otherwise, we may miss retained messages.
             _LOGGER.info("Subscribed to %s", self._config.pwr_command_topic)
             await self._mqtt.subscribe(self._config.pwr_command_topic)
-
-            # Start telemetry tasks
-            self._tasks.add(asyncio.create_task(self._read_telemetry_data()))
 
             self._sdnotifier.notify("READY=1")
             # Wait for everything to complete
