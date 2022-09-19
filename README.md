@@ -32,7 +32,7 @@ All topic names are configurable in general. Using the `config.ini` terms, here 
 
 ## Prerequisites
 
-- Python 3.9 + PIP
+- Python 3.10 + PIP3
 
 ## User permissions
 

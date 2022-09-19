@@ -40,7 +40,7 @@ if __name__ == "__main__":
         _LOGGER.error("%s exception occured %s", type(e), e)
         parser.error(f"Please check {config_file_path} has wrong syntax")
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_event_loop_policy().new_event_loop()
 
     if parse_args.debug:
         loop.set_debug(True)

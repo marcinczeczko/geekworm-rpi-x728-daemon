@@ -21,7 +21,7 @@ class X728Battery:
     def __init__(self, loop: AbstractEventLoop) -> None:
         self._smbus: smbus.SMBus = None
         self._loop = loop
-        self._lock = Lock(loop=loop)
+        self._lock = Lock()
 
     def _open(self) -> None:
         self._smbus = smbus.SMBus(BUS_ID)
