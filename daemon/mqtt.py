@@ -3,17 +3,16 @@ import asyncio
 import logging
 import typing
 import json
+import sdnotify
+
+from .configuration import Configuration
+from .power_mngt import X728PowerManager
+from .battery import X728Battery
 
 from unidecode import unidecode
 from datetime import datetime
 from contextlib import AsyncExitStack
 from asyncio_mqtt import Client as AsyncMqttClient, Will
-
-from . import Configuration
-from . import X728Battery
-from . import X728PowerManager
-
-import sdnotify
 
 _LOGGER: typing.Final[logging.Logger] = logging.getLogger("x728.daemon")
 
