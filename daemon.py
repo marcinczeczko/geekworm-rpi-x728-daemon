@@ -18,15 +18,9 @@ _LOGGER: typing.Final[logging.Logger] = logging.getLogger("x728")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Geekworm X728 Power Management")
-    parser.add_argument("-d", "--debug", help="show debug output", action="store_true")
     parser.add_argument("-c", "--config_file_path", help="set path to the configuration file")
     parse_args = parser.parse_args()
     config_file_path = parse_args.config_file_path
-
-    if parse_args.debug:
-        _LOGGER.setLevel(logging.DEBUG)
-    else:
-        _LOGGER.setLevel(logging.INFO)
 
     if not config_file_path:
         parser.error("Missing configuration file path")
@@ -39,10 +33,11 @@ if __name__ == "__main__":
     except (configparser.Error, FileNotFoundError) as e:
         _LOGGER.error("%s exception occured %s", type(e), e)
         parser.error(f"Please check {config_file_path} has wrong syntax")
+    _LOGGER.setLevel(config.log_level)
 
     loop = asyncio.get_event_loop()
 
-    if parse_args.debug:
+    if config.log_level.upper() == "DEBUG":
         loop.set_debug(True)
 
     daemon = daemon.X728Daemon(loop=loop, config=config)
