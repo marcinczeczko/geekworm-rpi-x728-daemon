@@ -4,3 +4,5 @@ sdnotify == 0.3.2
 smbus == 1.1.post2
 unidecode == 1.3.4
 aiorun == 2022.4.1
+pylint == 2.15.2
+yapf == 0.32.0
