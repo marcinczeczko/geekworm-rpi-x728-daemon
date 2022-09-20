@@ -1,7 +1,7 @@
 """
 Expose module classes
 """
-__all__ = ["Configuration", "X728Daemon"]
+__all__ = ["Configuration", "MQTTDaemon"]
 
 from .configuration import Configuration
-from .mqtt import X728Daemon
+from .mqtt_daemon import MQTTDaemon

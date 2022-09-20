@@ -45,6 +45,6 @@ if __name__ == "__main__":
     if parse_args.debug:
         loop.set_debug(True)
 
-    daemon = daemon.X728Daemon(loop=loop, config=config)
+    daemon = daemon.MQTTDaemon(loop=loop, config=config)
 
     aiorun.run(daemon.start(), loop=loop, shutdown_callback=daemon.close)
