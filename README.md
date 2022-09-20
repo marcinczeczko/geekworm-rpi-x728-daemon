@@ -105,3 +105,10 @@ sudo systemctl status x728-daemon.service
 ```sh
 sudo journalctl --unit x728-daemon.service -f
 ```
+
+
+## TODO
+AC Power should be a separate channel anyway:
+- so it should show the current status of AC power and react of power lost events
+- shutdown_alarm - should raise ON/OFF if the battery level reaches the critical level (3.3) - so could inform ohe the shutdown will happen
+    - configurable trigger of shutdown alarm

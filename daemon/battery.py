@@ -5,7 +5,6 @@ import struct
 import smbus
 
 from asyncio import AbstractEventLoop, Lock
-
 # I2C
 BATTERY_I2C_ADDR = 0x36
 BATTERY_REGISTER = 2
@@ -30,18 +29,23 @@ class X728Battery:
         self._smbus.close()
 
     async def connect(self) -> None:
-        return self._loop.run_in_executor(None, self._open)
+        self._loop.run_in_executor(None, self._open)
 
     async def close(self) -> None:
-        return self._loop.run_in_executor(None, self._close)
+        self._loop.run_in_executor(None, self._close)
 
-    async def get_voltage(self) -> float:
+    async def get(self) -> typing.Tuple[float, float]:
+        capacity = await self._capacity()
+        voltage = await self._voltage()
+        return (voltage, capacity)
+
+    async def _voltage(self) -> float:
         word = await self._i2c_read_word(BATTERY_REGISTER)
         return round(word * 1.25 / 1000 / 16, 2)
 
-    async def get_capacity(self) -> int:
+    async def _capacity(self) -> float:
         word = await self._i2c_read_word(CAPACITY_REGISTER)
-        return int(word / 256)
+        return round(word / 256, 2)
 
     async def _i2c_read_word(self, register: int) -> int:
         await self._lock.acquire()

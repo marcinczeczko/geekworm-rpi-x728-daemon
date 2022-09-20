@@ -5,6 +5,7 @@ import types
 import typing
 import time
 from RPi import GPIO
+from daemon.constants import AcPower, ShutDownCmd
 
 _LOGGER: typing.Final[logging.Logger] = logging.getLogger("x728.daemon.power")
 
@@ -23,7 +24,7 @@ class X728PowerManager:
     def __init__(
         self,
         loop: asyncio.AbstractEventLoop,
-        pwrloss_clb: typing.Callable[[str], typing.Awaitable[None]],
+        pwrloss_clb: typing.Callable[[AcPower], typing.Awaitable[None]],
     ) -> None:
         self._loop = loop
         self._clb = pwrloss_clb
@@ -42,10 +43,10 @@ class X728PowerManager:
         def on_gpio_event_pwr_loss(_: int):
             if GPIO.input(GPIO_POWERLOSS_PIN):
                 _LOGGER.warning("AC Power: LOST")
-                asyncio.run_coroutine_threadsafe(self._clb("LOST"), self._loop)
+                asyncio.run_coroutine_threadsafe(self._clb(AcPower.OFF), self._loop)
             else:
                 _LOGGER.warning("AC Power: ON")
-                asyncio.run_coroutine_threadsafe(self._clb("ON"), self._loop)
+                asyncio.run_coroutine_threadsafe(self._clb(AcPower.ON), self._loop)
 
         def on_button_pressed(_: int):
             asyncio.run_coroutine_threadsafe(self._pwr_button_pressed(), self._loop)
@@ -63,14 +64,28 @@ class X728PowerManager:
         ])
         await asyncio.sleep(0.01)
 
-    async def press_shutdown(self):
-        await self._press_button(4)
+    async def press_button(self, button: ShutDownCmd):
+        _LOGGER.warning("Requested %s. Executing command in 10 seconds", button.value)
+        await asyncio.sleep(10)
+        await self._press_button(button.value)
 
-    async def press_reboot(self):
-        await self._press_button(0.5)
+    # async def press_shutdown(self):
+    #     _LOGGER.warning("Requested shutdown. Shutting down system in 10 seconds")
+    #     await asyncio.sleep(10)
+    #     await self._press_button(4)
 
-    def ac_power(self) -> bool:
-        return not bool(GPIO.input(GPIO_POWERLOSS_PIN))
+    # async def press_reboot(self):
+    #     _LOGGER.warning("Requested reboot. Rebooting system in 10 seconds")
+    #     await asyncio.sleep(10)
+    #     await self._press_button(0.5)
+
+    def ac_power(self) -> AcPower:
+        return AcPower.OFF if GPIO.input(GPIO_POWERLOSS_PIN) else AcPower.ON
+
+    async def _press_button(self, press_time: int):
+        GPIO.output(GPIO_SOFT_BUTTON_PIN, GPIO.HIGH)
+        await asyncio.sleep(press_time)
+        GPIO.output(GPIO_SOFT_BUTTON_PIN, GPIO.LOW)
 
     async def _pwr_button_pressed(self):
         if GPIO.input(GPIO_PHYSICAL_BUTTON_PIN):
@@ -91,11 +106,6 @@ class X728PowerManager:
         process = await asyncio.create_subprocess_shell(cmd, stderr=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
         # Wait for finish
         await process.wait()
-
-    async def _press_button(self, press_time: int):
-        GPIO.output(GPIO_SOFT_BUTTON_PIN, GPIO.HIGH)
-        await asyncio.sleep(press_time)
-        GPIO.output(GPIO_SOFT_BUTTON_PIN, GPIO.LOW)
 
     async def __aenter__(self) -> "X728PowerManager":
         await self.connect()
