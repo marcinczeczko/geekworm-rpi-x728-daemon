@@ -20,5 +20,7 @@ class AcPower(Enum):
 
 
 class ShutDownCmd(Enum):
+    """Value of enum defines how long (seconds) the shutdown button should be soft-pressed
+    """
     SHUTDOWN = 4
     REBOOT = 0.5

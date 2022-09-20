@@ -66,7 +66,7 @@ class MQTTDaemon:
             # Get messages generator for a given topic
             commands = await stack.enter_async_context(self._mqtt.filtered_messages(self._config.shutdown_cmnd_topic))
             # Handle received messages
-            self._tasks.add(asyncio.create_task(self._process_shutdown_cmd(commands)))
+            self._tasks.add(asyncio.create_task(self._process_shutdown_messages(commands)))
 
             # Subscribe to topic(s).
             # Note that we subscribe *after* starting the message
@@ -102,15 +102,17 @@ class MQTTDaemon:
     async def _send_lwt(self, state: LwtValue):
         await self._publish(self._config.lwt_topic, state.value, qos=1, retain=True)
 
-    async def _process_shutdown_cmd(self, commands):
-        async for cmd in commands:
-            try:
-                shutdown_cmd = ShutDownCmd(cmd.payload.decode())
-                _LOGGER.debug("Received Command  [%s]", shutdown_cmd.value)
+    async def _process_shutdown_messages(self, messages):
+        async for message in messages:
+            msg = message.payload.decode().upper()
+            if hasattr(ShutDownCmd, msg):
+                shutdown_cmd = ShutDownCmd[msg]
+                _LOGGER.debug("Received Command  [%s]", shutdown_cmd.name)
 
                 await self._do_shutdown(shutdown_cmd)
-            except ValueError:
-                _LOGGER.warning("Unrecognized command received [%s]", cmd.payload.decode())
+            else:
+                _LOGGER.warning("Unrecognized command received [%s]", message.payload.decode())
+                await self._publish(self._config.shutdown_stat_topic, "UNKNOWN")
 
     async def _do_shutdown(self, cmd: ShutDownCmd):
         timestamp_sd = datetime.now().strftime("%b %d %H:%M:%S")
