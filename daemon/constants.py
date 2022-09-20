@@ -20,5 +20,5 @@ class AcPower(Enum):
 
 
 class ShutDownCmd(Enum):
-    SHUTDOWN = "Shutdown"
-    REBOOT = "Reboot"
+    SHUTDOWN = 4
+    REBOOT = 0.5

@@ -16,7 +16,7 @@ class Configuration:
 
     def _load_config(self, config_file_path: str) -> None:
         config = configparser.ConfigParser()
-        config.optionxform = str
+        #config.optionxform = str
 
         with open(config_file_path, encoding="utf-8") as file:
             config.read_file(file)
