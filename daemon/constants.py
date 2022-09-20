@@ -1,22 +1,31 @@
-from enum import Enum
+from enum import Enum, auto
 
 MQTT_CLIENT_ID = "x728-daemon"
 
 
 class LwtValue(Enum):
-    ONLINE = "Online"
-    OFFLINE = "Offline"
+    ONLINE = auto()
+    OFFLINE = auto()
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class BatteryAlarmValue(Enum):
-    OFF = "OFF"
-    WARNING = "Warning"
-    CRITICAL = "Critical"
+    OFF = auto()
+    WARNING = auto()
+    CRITICAL = auto()
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class AcPower(Enum):
-    OFF = "OFF"
-    ON = "ON"
+    OFF = auto()
+    ON = auto()
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class ShutDownCmd(Enum):
@@ -24,3 +33,6 @@ class ShutDownCmd(Enum):
     """
     SHUTDOWN = 4
     REBOOT = 0.5
+
+    def __str__(self) -> str:
+        return self.name

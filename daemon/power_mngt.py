@@ -1,13 +1,15 @@
 """X728 Power Management"""
 import asyncio
 import logging
-import types
-import typing
 import time
 from RPi import GPIO
+
+from typing import Final, Callable, Awaitable, Optional, Type
+from types import TracebackType
+
 from daemon.constants import AcPower, ShutDownCmd
 
-_LOGGER: typing.Final[logging.Logger] = logging.getLogger("x728.daemon.power")
+_LOGGER: Final[logging.Logger] = logging.getLogger("x728.daemon.power")
 
 # GPIO Pins
 GPIO_POWERLOSS_PIN = 6
@@ -24,7 +26,7 @@ class X728PowerManager:
     def __init__(
         self,
         loop: asyncio.AbstractEventLoop,
-        pwrloss_clb: typing.Callable[[AcPower], typing.Awaitable[None]],
+        pwrloss_clb: Callable[[AcPower], Awaitable[None]],
     ) -> None:
         self._loop = loop
         self._clb = pwrloss_clb
@@ -65,19 +67,9 @@ class X728PowerManager:
         await asyncio.sleep(0.01)
 
     async def press_button(self, button: ShutDownCmd):
-        _LOGGER.warning("Requested %s. Executing command in 10 seconds", button.value)
+        _LOGGER.warning("Requested %s. Executing command in 10 seconds", button)
         await asyncio.sleep(10)
         await self._press_button(button.value)
-
-    # async def press_shutdown(self):
-    #     _LOGGER.warning("Requested shutdown. Shutting down system in 10 seconds")
-    #     await asyncio.sleep(10)
-    #     await self._press_button(4)
-
-    # async def press_reboot(self):
-    #     _LOGGER.warning("Requested reboot. Rebooting system in 10 seconds")
-    #     await asyncio.sleep(10)
-    #     await self._press_button(0.5)
 
     def ac_power(self) -> AcPower:
         return AcPower.OFF if GPIO.input(GPIO_POWERLOSS_PIN) else AcPower.ON
@@ -113,8 +105,8 @@ class X728PowerManager:
 
     async def __aexit__(
         self,
-        exc_type: typing.Optional[typing.Type[BaseException]],
-        exc: typing.Optional[BaseException],
-        tb: typing.Optional[types.TracebackType],
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        tb: Optional[TracebackType],
     ) -> None:
         await self.close()

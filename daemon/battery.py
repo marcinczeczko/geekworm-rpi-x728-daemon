@@ -1,10 +1,12 @@
 """X728 Battery module"""
+from typing import Tuple, Optional, Type
 from types import TracebackType
-import typing
+
 import struct
 import smbus
 
 from asyncio import AbstractEventLoop, Lock
+
 # I2C
 BATTERY_I2C_ADDR = 0x36
 BATTERY_REGISTER = 2
@@ -34,7 +36,7 @@ class X728Battery:
     async def close(self) -> None:
         self._loop.run_in_executor(None, self._close)
 
-    async def get(self) -> typing.Tuple[float, float]:
+    async def get(self) -> Tuple[float, float]:
         capacity = await self._capacity()
         voltage = await self._voltage()
         return (voltage, capacity)
@@ -63,8 +65,8 @@ class X728Battery:
 
     async def __aexit__(
         self,
-        exc_type: typing.Optional[typing.Type[BaseException]],
-        exc: typing.Optional[BaseException],
-        tb: typing.Optional[TracebackType],
+        exc_type: Optional[Type[BaseException]],
+        exc: Optional[BaseException],
+        tb: Optional[TracebackType],
     ) -> None:
         await self.close()
