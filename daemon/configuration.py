@@ -24,14 +24,14 @@ class Configuration:
         self.mqtt_host = self._get_str(config, "MQTT", "mqtt_host", "localhost")
         self.mqtt_port = self._get_int(config, "MQTT", "mqtt_port", 1883)
 
-        self.lwt_topic = self._get_str(config, "MQTT", "lwt_topic", "x728/LWT}")
-        self.alert_battery_topic = self._get_str(config, "MQTT", "alert_battery_topic", "x728/ALARM")
+        self.lwt_topic = self._get_str(config, "MQTT", "lwt_topic", "x728/LWT")
+        self.alert_battery_topic = self._get_str(config, "MQTT", "alert_battery_topic", "x728/stat/ALARM")
 
-        self.battery_stat_topic = self._get_str(config, "MQTT", "battery_stat_topic", "x728/BATTERY")
-        self.acpower_stat_topic = self._get_str(config, "MQTT", "acpower_stat_topic", "x728/ACPOWER")
+        self.battery_stat_topic = self._get_str(config, "MQTT", "battery_stat_topic", "x728/stat/BATTERY")
+        self.acpower_stat_topic = self._get_str(config, "MQTT", "acpower_stat_topic", "x728/stat/ACPOWER")
 
-        self.shutdown_cmnd_topic = self._get_str(config, "MQTT", "shutdown_cmnd_topic", "x728/SHUTDOWN")
-        self.shutdown_stat_topic = self._get_str(config, "MQTT", "shutdown_stat_topic", "x728/SHUTDOWN")
+        self.shutdown_cmnd_topic = self._get_str(config, "MQTT", "shutdown_cmnd_topic", "x728/cmd/SHUTDOWN")
+        self.shutdown_stat_topic = self._get_str(config, "MQTT", "shutdown_stat_topic", "x728/stat/SHUTDOWN")
 
         self.status_interval = self._get_int(config, "MQTT", "status_interval", 60)
 

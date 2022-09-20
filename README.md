@@ -1,42 +1,49 @@
 # Overview
 
-The [X728](https://wiki.geekworm.com/X728) is an advanced uninterruptible power supply expansion board for all current models of the Raspberry Pi using a 40 pin header.
+The [X728](https://wiki.geekworm.com/X728) is an power supply expansion board for all current models of the Raspberry Pi using a 40 pin header.
+The software provided by the vendor is a shell script and couple of python scripts that rather showcases how to communicate with the board.
 
-The software provided by the vendor is a shell script and couple of python scripts showing how to communicate with board.
+I instead wanted to build my own daemonized service running on Pi to does all the job, that was:
 
-My goals to build my own daemon was:
+- Handling physical button on board to gracefully shutdown or reboot RPi
+- Monitor battery capacity and voltage and report it via MQTT
+- Send a warning via MQTT, if battery voltage is below certain value
+- Send a critical warning via MQTT, if battery drops below certain level
+- Gracefully shutdown RPi, if AC voltage is missing and critical warning about battery level were triggered
+- Send an alert via MQTT, if AC power is off
+- Finally, MQTT command topic to trigger gracefull reboot or shutdown of my RPi
 
-- To build one script/daemon to control the board
-- To be able to communicate with X728 via MQTT - so could use in my home automation system
-- To be a python based using `asyncio` (as I wanted to learn more about async python)
-
-General feaatures:
-- Periodic publication to MQTT topic system status about AC power, battery voltage & capacity of X728 board
-- Inform on MQTT topic AC power loss (or back)
-- Listen on MQTT topic to receive commands to Reboot or Shutdown gracefully your rpi.
-- Monitor battery voltage and when it drops below 3.0V RPI is gracefully shutdown
-- Handle X728 microswitch button allowing to Reboot (quick push) or gracefully Shutdown (longer push) RPI
+Which is actually a features that are currently implemented.
 
 ## MQTT Topics
 
-All topic names are configurable in general. Using the `config.ini` terms, here full list of topics available:
+All aspects of MQTT thing is configurable via `config.ini` as follows.
 
-| Topic                   | Purpose | Sample Data |
-|-------------------------|---------|---------------|
-| $prefix/tele/$topic/LWT |  Last Will Topic   | Online, Offline |
-| $prefix/tele/$topic/STATE |  Perioding status of the X728 Board (every 2mins by default)  | JSON - `{"Time": "2022-09-18T18:02:46","ACPower": "ON","Voltage": 4.19,"Capacity": 100,"LowBattery": false}` |
-| $prefix/cmnd/$topic/POWER |   Command topic to shutdown or reboot RPI | REBOOT, SHUTDOWN |
-| $prefix/stat/$topic/???? |  TODO     | |
+| Config param name | Default value if not set | Current value | Description                                               |
+| ----------------- | ------------------------ | ------------- | --------------------------------------------------------- |
+| mqtt_host         | localhost                | localhost     | MQTT hostname or IP                                       |
+| mqtt_port         | 1883                     | 1883          | MQTT Port                                                 |
+| status_interval   | 60                       | 120           | Battery and AC Power status reporting interval in seconds |
+
+And topics related configuration
+| Config param name   | Default value if not set | Current value             | Description                                                                  | Values                                     |
+| ------------------- | ------------------------ | ------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------ |
+| lwt_topic           | x728/LWT                 | home/tele/oh-ups/LWT      | Last Will Topic                                                              | ONLINE/OFFLINE                             |
+| alert_battery_topic | x728/stat/ALARM          | home/alert/oh-ups/BATTERY | Alerts battery reached certain level of voltage                              | WARNING (below 3.5V), CRITICAL (below3.0V) |
+| battery_stat_topic  | x728/stat/BATTERY        | home/stat/oh-ups/BATTERY  | Status about UPS battery condition - Voltage and Capacity (%)                | {"Voltage": "0.0", "Capacity": "90"}       |
+| acpower_stat_topic  | x728/stat/ACPOWER        | home/stat/oh-ups/ACPOWER  | Status of the AC Power. Reported every status interval, or when changes      | ON/OFF                                     |
+| shutdown_cmnd_topic | x728/cmd/SHUTDOWN        | home/cmnd/oh-ups/SHUTDOWN | Command topic to gracefully shutdown or reboot RPi. Action happens after 10s | REBOOT/SHUTDOWN                            |
+| shutdown_stat_topic | x728/stat/SHUTDOWN       | home/stat/oh-ups/SHUTDOWN | Status of the shutdown command - some form of confirmation                   | REBOOT/SHUTDOWN/UNKNOWN                    |
 
 # Installation
 
 ## Prerequisites
 
-- Python 3.10 + PIP3
+- Python 3.10 + PIP 3
 
 ## User permissions
 
-X728 service is runnin on `pi` user by default (if you have installed on different user follow the same steps). The user running the service must be a password-less sudoers with minium required rights to execute `/sbin/shutdown` command only.
+X728 service is running on `pi` user by default (if you have installed on different user follow the same steps). The user running the service must be a password-less sudoers with minium required rights to execute `/sbin/shutdown` command only.
 
 If your user has rights to `sudo` without password you're ready to go.
 
@@ -48,25 +55,7 @@ echo "pi ALL=NOPASSWD: /sbin/shutdown" > /etc/sudoers.d/010_shutdown
 
 ## Configuration
 
-Configure your daemon by editing `config.ini`.
-```ini
-[General]
-logLevel = DEBUG
-
-[MQTT]
-mqtt_host = 192.168.10.2
-#mqtt_port = 1883
-
-prefix = home
-topic = oh-power
-
-telemetry_topic_pattern = {prefix}/tele/{topic}
-command_topic_pattern = {prefix}/cmnd/{topic}
-status_topic_pattern = {prefix}/stat/{topic}
-
-# In seconds
-telemetry_interval = 2 
-```
+Except changing the values that are currently in config.ini nothing special is required.
 
 ## Install python packages
 
@@ -106,9 +95,16 @@ sudo systemctl status x728-daemon.service
 sudo journalctl --unit x728-daemon.service -f
 ```
 
+## Troubleshooting
+
+In case of any issued. You can run your service in a standalone mode, just stop the systemd services and run the service in debug mode
+
+```sh
+python3 daemon.py -c config.ini -d
+```
 
 ## TODO
-AC Power should be a separate channel anyway:
-- so it should show the current status of AC power and react of power lost events
-- shutdown_alarm - should raise ON/OFF if the battery level reaches the critical level (3.3) - so could inform ohe the shutdown will happen
-    - configurable trigger of shutdown alarm
+- MQTT over SSL
+- MQTT username/password 
+- Configurable triggers of battery alerts
+- Configurable delay between shutdown/reboot
