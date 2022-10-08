@@ -14,7 +14,7 @@ from .battery import X728Battery
 
 from datetime import datetime
 from contextlib import AsyncExitStack
-from asyncio_mqtt import Client as AsyncMqttClient, Will
+from asyncio_mqtt import Client as AsyncMqttClient, MqttError, Will
 
 _LOGGER: Final[logging.Logger] = logging.getLogger("x728.daemon")
 
@@ -76,11 +76,14 @@ class MQTTDaemon:
 
             self._sdnotifier.notify("READY=1")
             # Wait for everything to complete
-            await asyncio.gather(*self._tasks)
+            await asyncio.gather(*self._tasks, return_exceptions=True)
 
     async def close(self, _):
         self._sdnotifier.notify("STOPPING=1")
-        await self._send_lwt(LwtValue.OFFLINE)
+        try:
+            await self._send_lwt(LwtValue.OFFLINE)
+        except MqttError:
+            _LOGGER.error("MQTT is already disconnected. Do not sent gracfull Offline message")
 
     async def _ac_power_clb(self, state: AcPower):
         await self._get_service("mqtt").publish(self._config.acpower_stat_topic, str(state), qos=0, retain=True)

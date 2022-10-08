@@ -14,7 +14,7 @@ ExecStart=/usr/bin/python -u /home/pi/x728-daemon/daemon.py -c /home/pi/x728-dae
 StandardOutput=null
 StandardError=journal
 Restart=always
-RestartSec=3
+RestartSec=60
 
 [Install]
 WantedBy=multi-user.target

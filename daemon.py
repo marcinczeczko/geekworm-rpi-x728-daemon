@@ -1,4 +1,6 @@
 """Daemon main"""
+import time
+import sys
 import argparse
 import configparser
 import os
@@ -6,6 +8,7 @@ import asyncio
 import typing
 import logging
 import aiorun
+import asyncio_mqtt
 import daemon
 
 console = logging.StreamHandler()
@@ -40,11 +43,31 @@ if __name__ == "__main__":
         _LOGGER.error("%s exception occured %s", type(e), e)
         parser.error(f"Please check {config_file_path} has wrong syntax")
 
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+    restart_retry_count: int = 0
+    graceful_shutdown = False
+    while restart_retry_count < config.restart_on_error_max_retries and not graceful_shutdown:
+        try:
+            import daemon
 
-    if parse_args.debug:
-        loop.set_debug(True)
+            loop = asyncio.get_event_loop_policy().new_event_loop()
 
-    daemon = daemon.MQTTDaemon(loop=loop, config=config)
+            if parse_args.debug:
+                loop.set_debug(True)
 
-    aiorun.run(daemon.start(), loop=loop, shutdown_callback=daemon.close)
+            daemon = daemon.MQTTDaemon(loop=loop, config=config)
+
+            aiorun.run(daemon.start(), loop=loop, shutdown_callback=daemon.close, stop_on_unhandled_errors=True)
+            graceful_shutdown = True
+        except Exception as e:
+            _LOGGER.error("MQTT Error happened: %s. Most likely AC power is lost, attempting to re-start daemon in %d seconds.", e,
+                          config.restart_on_error_timeout_sec)
+            loop.close()
+            restart_retry_count += 1
+            time.sleep(config.restart_on_error_timeout_sec)
+            _LOGGER.info("Restart attempt %d/%d", restart_retry_count, config.restart_on_error_max_retries)
+
+    if not graceful_shutdown:
+        _LOGGER.critical("Reached maximum restart counts. Stopping the process")
+        sys.exit(os.EX_UNAVAILABLE)
+    else:
+        sys.exit(os.EX_OK)

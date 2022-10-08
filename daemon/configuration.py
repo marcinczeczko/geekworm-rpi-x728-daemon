@@ -35,6 +35,9 @@ class Configuration:
 
         self.status_interval = self._get_int(config, "MQTT", "status_interval", 60)
 
+        self.restart_on_error_timeout_sec = self._get_int(config, "Daemon", "restart_on_error_timeout_sec", 5 * 60)
+        self.restart_on_error_max_retries = self._get_int(config, "Daemon", "restart_on_error_max_retries", 5)
+
     def _get_str(self, config, section: str, prop_name: str, default_val: str = None) -> str:
         return config[section].get(prop_name, default_val)
 
