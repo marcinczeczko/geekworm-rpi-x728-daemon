@@ -1,6 +1,7 @@
 """Daemon configuration file handling"""
 import logging
 import configparser
+from typing import Union
 
 log = logging.getLogger("x728.configuration")
 
@@ -40,7 +41,7 @@ class Configuration:
         self.restart_on_error_timeout_sec = self._get_int(config, "Daemon", "restart_on_error_timeout_sec", 5 * 60)
         self.restart_on_error_max_retries = self._get_int(config, "Daemon", "restart_on_error_max_retries", 5)
 
-    def _get_str(self, config, section: str, prop_name: str, default_val: str | None = None) -> str | None:
+    def _get_str(self, config, section: str, prop_name: str, default_val: Union[str, None] = None) -> Union[str, None]:
         return config[section].get(prop_name, default_val)
 
     def _get_int(self, config, section: str, prop_name: str, default_val: int = 0) -> int:
