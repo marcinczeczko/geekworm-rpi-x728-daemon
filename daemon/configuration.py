@@ -23,6 +23,8 @@ class Configuration:
 
         self.mqtt_host = self._get_str(config, "MQTT", "mqtt_host", "localhost")
         self.mqtt_port = self._get_int(config, "MQTT", "mqtt_port", 1883)
+        self.mqtt_user = self._get_str(config, "MQTT", "mqtt_user")
+        self.mqtt_psw = self._get_str(config, "MQTT", "mqtt_psw")
 
         self.lwt_topic = self._get_str(config, "MQTT", "lwt_topic", "x728/LWT")
         self.alert_battery_topic = self._get_str(config, "MQTT", "alert_battery_topic", "x728/stat/ALARM")
@@ -38,7 +40,7 @@ class Configuration:
         self.restart_on_error_timeout_sec = self._get_int(config, "Daemon", "restart_on_error_timeout_sec", 5 * 60)
         self.restart_on_error_max_retries = self._get_int(config, "Daemon", "restart_on_error_max_retries", 5)
 
-    def _get_str(self, config, section: str, prop_name: str, default_val: str = None) -> str:
+    def _get_str(self, config, section: str, prop_name: str, default_val: str | None = None) -> str | None:
         return config[section].get(prop_name, default_val)
 
     def _get_int(self, config, section: str, prop_name: str, default_val: int = 0) -> int:
