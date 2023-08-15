@@ -1,0 +1,20 @@
+[Unit]
+Description=Geekworm X728 UPS Management Daemon
+After=network.target mosquitto.service network-online.target
+Wants=network-online.target
+Requires=network.target
+
+[Service]
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=$PYTHONPATH:/home/openhabian/.local/lib/python3.9/site-packages
+Type=notify
+User=openhabian
+WorkingDirectory=/home/openhabian/x728-daemon
+ExecStart=/usr/bin/python3 -u /home/openhabian/x728-daemon/daemon.py -c /home/openhabian/x728-daemon/config.ini
+StandardOutput=null
+StandardError=journal
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
