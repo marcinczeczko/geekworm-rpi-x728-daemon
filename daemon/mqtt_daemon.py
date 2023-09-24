@@ -52,6 +52,8 @@ class MQTTDaemon:
             self._mqtt = AsyncMqttClient(hostname=self._config.mqtt_host,
                                          port=self._config.mqtt_port,
                                          client_id=MQTT_CLIENT_ID,
+                                         username=self._config.mqtt_user,
+                                         password=self._config.mqtt_psw,
                                          will=self._will,
                                          keepalive=60,
                                          logger=_LOGGER)
